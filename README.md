@@ -1,5 +1,5 @@
 # Noriel_Sylvire's Minerals Core
-Version: 1.2
+Version: 1.3
 
 Copyright (c) 2020 Noriel_Sylvire (Flaviu E. Hongu)
 
@@ -11,16 +11,19 @@ Read license.txt for more information.
 
 ---
 
-This mod has a hard dependency on ns_minerals_core and nslib, and optional dependencies on all the other mods from this modpack to ensure a correct load order.
-If this mod wasn't set up in this way, your mods may load before the mods in this modpack, which would cause them not to work.
+This is the `ns_minerals` mod, also known as the afterloader.
+It ensures a correct load order when using this API.
 
-Before this mod was added, nsmc probably only worked with mods that came after it, alphabetically. I'm really sorry for not noticing before!
+The way it achieves this is by having a hard dependency on the `ns_minerals_core` mod, which adds the basic functionality of the API and the `nslib` library,
+which implements useful functions not related to this API.
 
-Technically, the name of this mod is ns_minerals, simply to make it easier to use. Because of this name, one might think this is the main mod in the modpack but actually it isn't. This mod is the last one to load
-because it depends on all the other mods from the modpack. Then you add this mod and only this mod as a dependency and that causes the entire modpack to load before your mods, so that you can actually use the
-modpack!
+In order to use this API your mod must have a hard dependency on `ns_minerals`, aka this mod. This way, all of this mods dependencies get loaded first,
+then this mod gets loaded, and lastly, your mod gets loaded.
+This way we ensure that when your mod registers anything, or uses any function from this API, it has everything available to it.
 
-This mod is also referred to as the afterloader, because it loads after the rest of the modpack, and fixes the load order.
+Before this mod was created, sometimes the mods were loaded in the wrong order, causing problems when a mod using the API
+was loaded before the API itself. I suspect this was due to the mods loading alphabetically or something like that.
+I'm sorry for not noticing earlier!
 
 ---
 ## Changelog
@@ -30,7 +33,8 @@ This mod is also referred to as the afterloader, because it loads after the rest
 ---
 ## API Documentation
 
-In order to use the API, you must create a mod that depends on `ns_minerals_core`. Then you must write the definition of an array of `mineral`, and call the `nsmc.register_minerals()` method.
+In order to use the API, you must create a mod with a hard dependency on `ns_minerals`. Then you just write an array of `mineral`, and call the `nsmc.register_minerals()` method, giving it the name of your mod
+as a `string`, and the array of `mineral` as parameters.
 
 ---
 ### Methods
@@ -41,8 +45,26 @@ Example of how to call a method:
 ```lua
 nsmc.register_minerals("mymod", {{}})
 ```
-The above code is functional and will result in one mineral named `"mymod1mineral"` added to the game, complete with tools, nodes, ore generation and textures. The textures will all be white.
-All the methods contained in this mod, when given a blank mineral with no values, will default everything to the same values or `default` mod iron. So, the same scarcity, depths, uses, damage, etcetera, as iron.
+The above code is functional and will result in one mineral named `"mymod1mineral"` added to the game, complete with tools, nodes, ore generation. sounds and textures (provided you also downloaded
+the `ns_minerals_default` and `ns_minerals_farming` mods). The textures will all be white.
+
+All of the methods contained in this API will use default values for any property you don't define yourself.
+The default values given by the API are exactly the same as the values of iron from the `default` mod. Meaning the same scarcity, depth, number of uses, etcetera.
+All except for the color, which, if you don't provide a color, will be defaulted as plain white. Also if you don't give it a name, the mineral will be given the same name as your mod,
+plus a number and the word "mineral".
+
+---
+### nsmc.register_minerals(modname, minerals)
+Parameters:
+* modname: a `string` value. This must be the name of your mod.
+* minerals: an array of `mineral` table. This must be an array of `mineral` table containing every mineral you want to add to the game. See MINERAL TABLE for more information.
+
+This method calls the other methods from all the mods that you have installed. If you have the `ns_minerals_default` mod, it will register crafting recipes, nodes,
+tools, the sound tools make when they break, and all the other stuff that comes with the `default` mod. If you also have the `ns_minerals_farming` mod, for example,
+it will also add tool variants from the `farming` mod.
+
+Basically it will add everything for each `mineral` in the array.
+If you don't provide some specific property for a mineral, it will just get the default value.
 
 ---
 ### nsmc.register_crafts(modname, mineral)
